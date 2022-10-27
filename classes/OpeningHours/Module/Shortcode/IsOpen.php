@@ -3,6 +3,7 @@
 namespace OpeningHours\Module\Shortcode;
 
 use OpeningHours\Entity\IrregularOpening;
+use OpeningHours\Entity\IrregularClosing; // JNL
 use OpeningHours\Entity\Period;
 use OpeningHours\Entity\Set;
 use OpeningHours\Module\OpeningHours;
@@ -12,7 +13,7 @@ use OpeningHours\Util\Weekdays;
 /**
  * Shortcode indicating whether the venue is currently open or not
  *
- * @author      Jannik Portz
+ * @author      Jannik Portz, JNL
  * @package     OpeningHours\Module\Shortcode
  */
 class IsOpen extends AbstractShortcode {
@@ -28,10 +29,12 @@ class IsOpen extends AbstractShortcode {
       'open_text' => __('We\'re currently open.', 'wp-opening-hours'),
       'closed_text' => __('We\'re currently closed.', 'wp-opening-hours'),
       'closed_holiday_text' => __('We\'re currently closed for %1$s.', 'wp-opening-hours'),
+      'closed_irregular_text' => __('We\'re currently closed due to %1$s.', 'wp-opening-hours'), // JNL
       'show_next' => false,
       'next_format' => __('We\'re open again on %2$s (%1$s) from %3$s to %4$s', 'wp-opening-hours'),
       'show_today' => 'never',
       'show_closed_holidays' => false,
+      'show_closed_irregular' => false, // JNL
       'today_format' => __('Opening Hours today: %1$s', 'wp-opening-hours'),
       'before_widget' => '<div class="op-is-open-shortcode">',
       'after_widget' => '</div>',
@@ -91,21 +94,53 @@ class IsOpen extends AbstractShortcode {
 
     $attributes['is_open'] = $isOpen;
     $attributes['classes'] .= $isOpen ? $attributes['open_class'] : $attributes['closed_class'];
+   
+    // JNL 
+    if ($isOpen) { // OPEN
+      $attributes['text'] = $attributes['open_text'];
+    } else { // CLOSED
 
-    // If the attribute show_closed_holidays is enabled
-    if ($attributes['show_closed_holidays']) {
-      $holidaysList = $this->getTodaysHolidaysCommaSeperated($todayData);
-      $closedText = $holidaysList
-        ? sprintf($attributes['closed_holiday_text'], $holidaysList)
-        : $attributes['closed_text'];
-    } else {
-      $closedText = $attributes['closed_text'];
+      if (count($todayData['holidays']) > 0) {
+        $holidaysList = $this->getTodaysHolidaysCommaSeperated($todayData);
+        $closedText = $holidaysList
+          ? sprintf($attributes['closed_holiday_text'], $holidaysList)
+          : $attributes['closed_text'];
+      } elseif (count($todayData['irregularClosings']) > 0) {
+        $irregularList = $this->getTodaysIrregularClosing($todayData);
+        $closedText = $irregularList
+          ? sprintf($attributes['closed_irregular_text'], $irregularList)
+          : $attributes['closed_text'];
+      } else {
+        $closedText = $attributes['closed_text'];
+      }
+      $attributes['text'] = $closedText;
     }
-
-    $attributes['text'] = $isOpen ? $attributes['open_text'] : $closedText;
+    
+    //$attributes['text'] = $isOpen ? $attributes['open_text'] : $closedText;
 
     echo $this->renderShortcodeTemplate($attributes, 'shortcode/is-open.php');
   }
+
+
+  /** JNL
+   * Retrieves irregular closing name for today
+   * @param  array $todayData   Data for today
+   * @return string            Extracted irregular closing reason
+   */
+  public function getTodaysIrregularClosing($todayData) {
+    if (count($todayData['irregularClosings']) > 0) {
+      $closingNames = array();
+
+      foreach ($todayData['irregularClosings'] as $closing) {
+        array_push($closingNames, $closing->getName());
+      }
+
+      return implode(', ', $closingNames);
+    }
+
+    return null;
+  }
+
 
   /**
    * Retrieves holiday names for today
@@ -136,6 +171,12 @@ class IsOpen extends AbstractShortcode {
       /* @var IrregularOpening $io */
       $io = $todayData['irregularOpenings'][0];
       return array($io->createPeriod());
+    }
+    // JNL
+    if (count($todayData['irregularClosings']) > 0) {
+      /* @var IrregularClosing $ic */
+      $ic = $todayData['irregularClosings'][0];
+      return array($ic->createPeriod());
     }
 
     if (count($todayData['holidays']) > 0) {

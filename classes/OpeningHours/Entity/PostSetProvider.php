@@ -71,6 +71,8 @@ class PostSetProvider extends SetProvider {
     $set->setPeriods(ArrayObject::createFromArray($persistence->loadPeriods()));
     $set->setHolidays(ArrayObject::createFromArray($rootPersistence->loadHolidays()));
     $set->setIrregularOpenings(ArrayObject::createFromArray($rootPersistence->loadIrregularOpenings()));
+    // JNL
+    $set->setIrregularClosings(ArrayObject::createFromArray($rootPersistence->loadIrregularClosings()));
 
     $description = $details->getValue('description', $post->ID);
 
@@ -219,7 +221,7 @@ class PostSetProvider extends SetProvider {
   /**
    * Creates an instance of Set from a Post object
    * and populates it with the post name and Periods, Holidays
-   * and Irregular Openings which are saved for that specific Set.
+   * and Irregular Openings and Closings which are saved for that specific Set.
    *
    * @param       \WP_Post    $post   The post from which to create the set
    * @return      Set                 The Set instance consisting of the post's meta data
@@ -232,6 +234,7 @@ class PostSetProvider extends SetProvider {
     $set->setPeriods(ArrayObject::createFromArray($persistence->loadPeriods()));
     $set->setHolidays(ArrayObject::createFromArray($persistence->loadHolidays()));
     $set->setIrregularOpenings(ArrayObject::createFromArray($persistence->loadIrregularOpenings()));
+    $set->setIrregularClosings(ArrayObject::createFromArray($persistence->loadIrregularClosings()));
     return $set;
   }
 

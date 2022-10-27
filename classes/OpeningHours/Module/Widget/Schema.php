@@ -8,7 +8,7 @@ use OpeningHours\Module\Shortcode\Schema as SchemaShortcode;
 /**
  * Widget for Schema.org Shortcode
  *
- * @author      Jannik Portz
+ * @author      Jannik Portz, JNL
  * @package     OpeningHours\Module\Widget
  */
 class Schema extends AbstractWidget {
@@ -38,6 +38,12 @@ class Schema extends AbstractWidget {
     $this->addField('exclude_irregular_openings', array(
       'type' => 'checkbox',
       'caption' => __('Exclude Irregular Openings', 'wp-opening-hours')
+    ));
+
+    // JNL
+    $this->addField('exclude_irregular_closings', array(
+      'type' => 'checkbox',
+      'caption' => __('Exclude Irregular Closings', 'wp-opening-hours')
     ));
 
     $this->addField('schema_attr_type', array(

@@ -8,7 +8,7 @@ use OpeningHours\Module\Shortcode\Overview as OverviewShortcode;
 /**
  * Widget for Overview Shortcode
  *
- * @author      Jannik Portz
+ * @author      Jannik Portz, JNL
  * @package     OpeningHours\Module\Widget
  */
 class Overview extends AbstractWidget {
@@ -70,6 +70,12 @@ class Overview extends AbstractWidget {
       'caption' => __('Include Irregular Openings', 'wp-opening-hours')
     ));
 
+    // JNL
+    $this->addField('include_ic', array(
+      'type' => 'checkbox',
+      'caption' => __('Include Irregular Closings', 'wp-opening-hours')
+    ));
+
     $this->addField('include_holidays', array(
       'type' => 'checkbox',
       'caption' => __('Include Holidays', 'wp-opening-hours')
@@ -117,6 +123,13 @@ class Overview extends AbstractWidget {
     $this->addField('hide_io_date', array(
       'type' => 'checkbox',
       'caption' => __('Hide date of Irregular Openings', 'wp-opening-hours'),
+      'extended' => true
+    ));
+
+    // JNL
+    $this->addField('hide_io_date', array(
+      'type' => 'checkbox',
+      'caption' => __('Hide date of Irregular Closings', 'wp-opening-hours'),
       'extended' => true
     ));
 

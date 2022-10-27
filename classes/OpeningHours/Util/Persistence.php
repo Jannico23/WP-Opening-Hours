@@ -6,13 +6,14 @@ use DateTime;
 use InvalidArgumentException;
 use OpeningHours\Entity\Holiday;
 use OpeningHours\Entity\IrregularOpening;
+use OpeningHours\Entity\IrregularClosing; // JNL
 use OpeningHours\Entity\Period;
 use WP_Post;
 
 /**
  * Saves data to and loads data from a specific post
  *
- * @author      Jannik Portz
+ * @author      Jannik Portz, JNL
  * @package     OpeningHours\Util
  */
 class Persistence {
@@ -24,6 +25,9 @@ class Persistence {
 
   /** Meta key under which irregular opening data is saved in post meta */
   const IRREGULAR_OPENINGS_META_KEY = '_op_set_irregular_openings';
+
+  /** Meta key under which irregular closing dataa is saved in post meta */
+  const IRREGULAR_CLOSINGS_META_KEY = '_op_set_irregular_closings'; // JNL
 
   /**
    * The post to save data to and load data from
@@ -163,5 +167,50 @@ class Persistence {
     }
 
     return $ios;
+  }
+
+  /** JNL
+   * Saves IrregularClosings to set meta
+   *
+   * @param     IrregularClosing[] $irregularClosings The IrregularClosings to save
+   */
+  public function saveIrregularClosings(array $irregularClosings) {
+    $meta = array();
+    foreach ($irregularClosings as $ic) {
+      if (!$ic instanceof IrregularClosing) {
+        continue;
+      }
+
+      $meta[] = array(
+        'name' => $ic->getName(),
+        'date' => $ic->getDate()->format(Dates::STD_DATE_FORMAT),
+        'timeStart' => $ic->getStart()->format(Dates::STD_TIME_FORMAT),
+        'timeEnd' => $ic->getEnd()->format(Dates::STD_TIME_FORMAT)
+      );
+    }
+    update_post_meta($this->post->ID, self::IRREGULAR_CLOSINGS_META_KEY, $meta);
+  }
+
+  /** JNL
+   * Loads IrregularClosings from set meta
+   * @return    IrregularClosing[]  All IrregularClosings associated with the set
+   */
+  public function loadIrregularClosings() {
+    $meta = get_post_meta($this->post->ID, self::IRREGULAR_CLOSINGS_META_KEY, true);
+    if (!is_array($meta)) {
+      return array();
+    }
+
+    $ioc = array();
+    foreach ($meta as $data) {
+      try {
+        $ic = new IrregularClosing($data['name'], $data['date'], $data['timeStart'], $data['timeEnd']);
+        $ioc[] = $ic;
+      } catch (InvalidArgumentException $e) {
+        trigger_error(sprintf('Could not load Irregular Closing due to: %s', $e->getMessage()));
+      }
+    }
+
+    return $ioc;
   }
 }

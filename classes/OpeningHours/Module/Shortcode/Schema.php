@@ -22,6 +22,7 @@ class Schema extends AbstractShortcode {
       'set_id' => null,
       'exclude_holidays' => false,
       'exclude_irregular_openings' => false,
+      'exclude_irregular_closings' => false, // JNL
       'schema_attr_type' => 'Place',
       'schema_attr_name' => null,
       'schema_attr_description' => null
@@ -29,7 +30,8 @@ class Schema extends AbstractShortcode {
 
     $this->validAttributeValues = array(
       'exclude_holidays' => array(false, true),
-      'exclude_irregular_openings' => array(false, true)
+      'exclude_irregular_openings' => array(false, true),
+      'exclude_irregular_closings' => array(false, true) // JNL
     );
   }
 
@@ -105,7 +107,8 @@ class Schema extends AbstractShortcode {
 
     $specialEntries = array_merge(
       $attributes['exclude_holidays'] ? array() : $generator->createHolidaysOpeningHoursSpecification(),
-      $attributes['exclude_irregular_openings'] ? array() : $generator->createIrregularOpeningHoursSpecification()
+      $attributes['exclude_irregular_openings'] ? array() : $generator->createIrregularOpeningHoursSpecification(),
+      $attributes['exclude_irregular_closings'] ? array() : $generator->createIrregularClosingHoursSpecification() // JNL
     );
 
     if (count($specialEntries) > 0) {

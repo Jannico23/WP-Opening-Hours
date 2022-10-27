@@ -4,6 +4,7 @@ namespace OpeningHours\Module\Shortcode;
 
 use OpeningHours\Entity\Holiday;
 use OpeningHours\Entity\IrregularOpening;
+use OpeningHours\Entity\IrregularClosing; // JNL
 use OpeningHours\Entity\Period;
 use OpeningHours\Entity\Set;
 use OpeningHours\Module\OpeningHours;
@@ -13,7 +14,7 @@ use OpeningHours\Util\Weekdays;
 /**
  * Shortcode implementation for a list or regular Opening Periods
  *
- * @author      Jannik Portz
+ * @author      Jannik Portz, JNL
  * @package     OpeningHours\Module\Shortcode
  */
 class Overview extends AbstractShortcode {
@@ -103,6 +104,11 @@ class Overview extends AbstractShortcode {
       if ($attributes['include_io']) {
         $model->mergeIrregularOpenings($set->getIrregularOpenings()->getArrayCopy());
       }
+      
+      // JNL
+      if ($attributes['include_ic']) {
+        $model->mergeIrregularClosings($set->getIrregularClosings()->getArrayCopy());
+      }
     }
 
     $data = $attributes['compress'] ? $model->getCompressedData() : $model->getData();
@@ -123,6 +129,8 @@ class Overview extends AbstractShortcode {
 
       if ($row['items'] instanceof IrregularOpening) {
         $dayData['periodsMarkup'] = self::renderIrregularOpening($row['items'], $attributes);
+      } elseif ($row['items'] instanceof IrregularClosing) { // JNL
+        $dayData['periodsMarkup'] = self::renderIrregularClosing($row['items'], $attributes);
       } elseif ($row['items'] instanceof Holiday) {
         $dayData['periodsMarkup'] = self::renderHoliday($row['items']);
       } elseif (count($row['items']) > 0) {
@@ -174,6 +182,35 @@ class Overview extends AbstractShortcode {
 
     $time_start = $io->getStart()->format($attributes['time_format']);
     $time_end = $io->getEnd()->format($attributes['time_format']);
+
+    $markup .= sprintf('<span class="op-period-time %s">%s – %s</span>', $highlighted, $time_start, $time_end);
+    return $markup;
+  }
+
+  /** JNL
+   * Renders an Irregular Closing Item for Overview table
+   *
+   * @param     IrregularClosing $ic         The Irregular Closing to show
+   * @param     array            $attributes The shortcode attributes
+   * @return    string                       The markup for the Irregular Closing
+   */
+  public static function renderIrregularClosing(IrregularClosing $ic, array $attributes) {
+    $name = $ic->getName();
+    $date = Dates::format(Dates::getDateFormat(), $ic->getStart());
+    $markup = '';
+
+    $heading = $attributes['hide_ic_date'] ? $name : sprintf('%s (%s)', $name, $date);
+
+    $now = Dates::getNow();
+    $highlighted =
+      $attributes['highlight'] == 'period' && $ic->getStart() <= $now && $now <= $ic->getEnd()
+        ? $attributes['highlighted_period_class']
+        : null;
+
+    $markup .= sprintf('<span class="op-period-time irregular-closing %s">%s</span>', $highlighted, $heading);
+
+    $time_start = $ic->getStart()->format($attributes['time_format']);
+    $time_end = $ic->getEnd()->format($attributes['time_format']);
 
     $markup .= sprintf('<span class="op-period-time %s">%s – %s</span>', $highlighted, $time_start, $time_end);
     return $markup;

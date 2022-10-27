@@ -43,6 +43,12 @@ class Set {
   protected $irregularOpenings;
 
   /**
+   * Collection of all Irregular Closings in the Set
+   * @var       ArrayObject
+   */
+  protected $irregularClosings;
+
+  /**
    * The set description
    * @var       string
    */
@@ -54,6 +60,7 @@ class Set {
     $this->periods = new ArrayObject();
     $this->holidays = new ArrayObject();
     $this->irregularOpenings = new ArrayObject();
+    $this->irregularClosings = new ArrayObject(); // JNL
   }
 
   /**
@@ -102,6 +109,18 @@ class Set {
     return $this->getIrregularOpeningInEffect($now) instanceof IrregularOpening;
   }
 
+  /** JNL
+   * Checks whether any irregular closing is currently active (based on the date)
+   *
+   * @param     DateTime $now Custom time
+   *
+   * @return    bool                whether any irregular closing is currently active
+   */
+  public function isIrregularClosingInEffect(DateTime $now = null) {
+    return $this->getIrregularClosingInEffect($now) instanceof IrregularClosing;
+  }
+
+
   /**
    * Evaluates all aspects determining whether the venue is currently open or not
    *
@@ -112,6 +131,12 @@ class Set {
   public function isOpen(DateTime $now = null) {
     if ($this->isHolidayActive($now)) {
       return false;
+    }
+    // JNL
+    // TODO
+    if ($this->isIrregularClosingInEffect($now)) {
+      $ic = $this->getIrregularClosingInEffect($now);
+      return $ic->isOpen($now);
     }
 
     if ($this->isIrregularOpeningInEffect($now)) {
@@ -229,10 +254,29 @@ class Set {
     return null;
   }
 
+   /** JNL
+   * Returns the first irregular closing that is in effect in the context of $now
+   * or null if no irregular closing is currently in effect.
+   *
+   * @param     DateTime    $now      Custom time. Default is the current time.
+   * @return    IrregularClosing|null The first irregular closing in effect or null
+   */
+  public function getIrregularClosingInEffect(DateTime $now = null) {
+    /** @var IrregularClosing $ic */
+    foreach ($this->irregularClosings as $ic) {
+      if ($ic->isInEffect($now)) {
+        return $ic;
+      }
+    }
+
+    return null;
+  }
+
+
   /**
    * Retrieves all data for the specified date
    * @param     DateTime    $now
-   * @return    array       Associative array containing arrays of data for the keys 'periods', 'holidays', 'irregularOpenings'
+   * @return    array       Associative array containing arrays of data for the keys 'periods', 'holidays', 'irregularOpenings, irregularClosings
    */
   public function getDataForDate(DateTime $now = null) {
     if ($now === null) {
@@ -250,7 +294,8 @@ class Set {
     return array(
       'periods' => $getForDay($this->periods),
       'holidays' => $getForDay($this->holidays),
-      'irregularOpenings' => $getForDay($this->irregularOpenings)
+      'irregularOpenings' => $getForDay($this->irregularOpenings),
+      'irregularClosings' => $getForDay($this->irregularClosings) //JNL
     );
   }
 
@@ -290,8 +335,18 @@ class Set {
     return $this->irregularOpenings;
   }
 
+  // JNL
+  public function getIrregularClosings() {
+    return $this->irregularClosings;
+  }
+
   public function setIrregularOpenings(ArrayObject $irregularOpenings) {
     $this->irregularOpenings = $irregularOpenings;
+  }
+
+  // JNL
+  public function setIrregularClosings(ArrayObject $irregularClosings) {
+    $this->irregularClosings = $irregularClosings;
   }
 
   public function getDescription() {

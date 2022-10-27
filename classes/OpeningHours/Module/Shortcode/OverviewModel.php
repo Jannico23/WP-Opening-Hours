@@ -4,6 +4,7 @@ namespace OpeningHours\Module\Shortcode;
 
 use OpeningHours\Entity\Holiday;
 use OpeningHours\Entity\IrregularOpening;
+use OpeningHours\Entity\IrregularClosing; // JNL
 use OpeningHours\Entity\Period;
 use OpeningHours\Util\Dates;
 use OpeningHours\Util\Weekdays;
@@ -13,7 +14,7 @@ class OverviewModel {
    * Array containing model data.
    * Each element is an array consisting of
    *  days: Weekday[]
-   *  items: Period[]|IrregularOpening|Holiday
+   *  items: Period[]|IrregularOpening|IrregularClosing|Holiday
    * @var       array
    */
   protected $data;
@@ -130,6 +131,22 @@ class OverviewModel {
 
       $offset = $irregularOpening->getDate()->diff($this->minDate);
       $this->data[$offset->days]['items'] = $irregularOpening;
+    }
+  }
+
+  /** JNL
+   * Merges the specified irregular closings into the OverviewModel
+   * @param     IrregularClosing[]  $irregularClosings  The Irregular Closings to merge into the model
+   */
+  public function mergeIrregularClosings(array $irregularClosings) {
+    /** @var IrregularClosing $irregularClosing */
+    foreach ($irregularClosings as $irregularClosing) {
+      if ($irregularClosing->getEnd() < $this->minDate || $irregularClosing->getStart() > $this->maxDate) {
+        continue;
+      }
+
+      $offset = $irregularClosing->getDate()->diff($this->minDate);
+      $this->data[$offset->days]['items'] = $irregularClosing;
     }
   }
 

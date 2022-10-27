@@ -7,7 +7,7 @@ use OpeningHours\Module\AbstractModule;
 /**
  * Set Custom Post Type
  *
- * @author      Jannik Portz
+ * @author      Jannik Portz, JNL
  * @package     OpeningHours\Module\CustomPostType
  */
 class Set extends AbstractModule {
@@ -40,6 +40,7 @@ class Set extends AbstractModule {
       'OpeningHours' => MetaBox\OpeningHours::getInstance(),
       'Holidays' => MetaBox\Holidays::getInstance(),
       'IrregularOpenings' => MetaBox\IrregularOpenings::getInstance(),
+      'IrregularClosings' => MetaBox\IrregularClosings::getInstance(), // JNL
       'SetDetails' => MetaBox\SetDetails::getInstance()
     );
   }
@@ -55,13 +56,14 @@ class Set extends AbstractModule {
     register_post_type(self::CPT_SLUG, $this->getArguments());
   }
 
+
   /** Clean Up Menu */
   public function cleanUpMenu() {
     global $submenu;
-
     /** Top Level: Registered via post_type op-set: Remove "Add New" Item */
-    unset($submenu['edit.php?post_type=op-set'][10]);
+        unset($submenu['edit.php?post_type=op-set'][10]);
   }
+
 
   /**
    * Getter: Labels

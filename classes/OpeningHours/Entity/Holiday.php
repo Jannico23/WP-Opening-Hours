@@ -106,7 +106,7 @@ class Holiday implements TimeContextEntity, DateTimeRange {
 
   /**
    * Checks whether the period is active on that day.
-   * Does not check for irregular opening or holidays overriding this period
+   * Does not check for irregular opening/closing or holidays overriding this period
    * @inheritdoc
    */
   public function happensOnDate(\DateTime $date) {

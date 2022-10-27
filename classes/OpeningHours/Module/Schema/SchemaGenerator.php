@@ -5,6 +5,7 @@ namespace OpeningHours\Module\Schema;
 use OpeningHours\Entity\ChildSetWrapper;
 use OpeningHours\Entity\Holiday;
 use OpeningHours\Entity\IrregularOpening;
+use OpeningHours\Entity\IrregularClosing; // JNL
 use OpeningHours\Entity\Period;
 use OpeningHours\Entity\Set;
 use OpeningHours\Util\Dates;
@@ -34,7 +35,7 @@ class SchemaGenerator {
   /**
    * Creates a new `SchemaGenerator` from the main set and child sets
    *
-   * @param     Set                 $mainSet      The main `Set` containing the regular opening hours, holidays and irregular openings
+   * @param     Set                 $mainSet      The main `Set` containing the regular opening hours, holidays and irregular openings ans closings
    * @param     ChildSetWrapper[]   $childSets    All child sets of `$mainSet` wrapped in `ChildSetWrapper`s
    *                                              Every child set must contain all of their respective children
    *                                              for the generator to consider the whole set tree
@@ -176,6 +177,34 @@ class SchemaGenerator {
         'validThrough' => $io->getDate()->format(SchemaGenerator::SCHEMA_DATE_FORMAT)
       );
     }, $ios);
+  }
+
+  /** JNL
+   * Creates OpeningHoursSpecification objects for the current Set's Irregular Closings.
+   * All past items will not be considered.
+   *
+   * @return      array[]         Sequence of OpeningHoursSpecification objects
+   *                              representing the current Set's Irregular Closings
+   */
+  public function createIrregularClosingHoursSpecification() {
+    $now = Dates::getNow();
+
+    $ioc = array_values(
+      array_filter($this->mainSet->getIrregularClosings()->getArrayCopy(), function (IrregularClosing $ic) use ($now) {
+        return $ic->getEnd() > $now;
+      })
+    );
+
+    return array_map(function (IrregularClosing $ic) {
+      return array(
+        '@type' => 'OpeningHoursSpecification',
+        'name' => $ic->getName(),
+        'opens' => $ic->getStart()->format(SchemaGenerator::SCHEMA_TIME_FORMAT),
+        'closes' => $ic->getEnd()->format(SchemaGenerator::SCHEMA_TIME_FORMAT),
+        'validFrom' => $ic->getDate()->format(SchemaGenerator::SCHEMA_DATE_FORMAT),
+        'validThrough' => $ic->getDate()->format(SchemaGenerator::SCHEMA_DATE_FORMAT)
+      );
+    }, $ioc);
   }
 
   /**

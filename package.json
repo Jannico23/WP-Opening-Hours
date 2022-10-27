@@ -5,18 +5,18 @@
   "dependencies": {
     "del": "^6.0.0",
     "gulp": "^4.0.2",
-    "gulp-autoprefixer": "^7.0.1",
+    "gulp-autoprefixer": "^6.1.0",
     "gulp-clean-css": "^4.3.0",
     "gulp-concat": "^2.6.0",
     "gulp-if": "^3.0.0",
     "gulp-jshint": "^2.0.0",
-    "gulp-sass": "^4.0.2",
+    "gulp-sass": "^5.1.0",
     "gulp-sourcemaps": "^3.0.0",
     "gulp-uglify": "^3.0.2",
-    "gulp-zip": "^5.1.0",
-    "jshint": "^2.12.0"
+    "gulp-zip": "^4.2.0",
+    "jshint": "^2.12.0",
+    "sass": "^1.54.9"
   },
-  "devDependencies": {},
   "scripts": {
     "export": "gulp export",
     "prettify": "prettier all --parser php --write \"classes/**/*.php\" \"./*.php\" \"tests/**/*.php\""

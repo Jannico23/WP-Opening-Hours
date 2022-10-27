@@ -11,7 +11,7 @@ use OpeningHours\Util\Weekday;
 /**
  * Represents a regular opening period
  *
- * @author      Jannik Portz
+ * @author      Jannik Portz, JNL 2022
  * @package     OpeningHours\Entity
  * @todo        add interface to combine Period and IrregularOpening
  */
@@ -123,7 +123,7 @@ class Period implements TimeContextEntity {
   }
 
   /**
-   * Checks if Period is currently open also regarding Holidays and SpecialOpenings
+   * Checks if Period is currently open also regarding Holidays, Special Openings and Irregular Closings
    *
    * @param     DateTime $now
    * @param     Set      $set The set in whose context to determine the opening status of this Period
@@ -131,7 +131,8 @@ class Period implements TimeContextEntity {
    * @return    bool
    */
   public function isOpen($now, Set $set) {
-    if ($set->isHolidayActive($now) or $set->isIrregularOpeningInEffect($now)) {
+    // JNL Logic adapted to consider also irregular closings
+    if ($set->isHolidayActive($now) or $set->isIrregularOpeningInEffect($now) or $set->isIrregularClosingInEffect($now)) {
       return false;
     }
 
@@ -141,7 +142,7 @@ class Period implements TimeContextEntity {
   /**
    * Checks whether the specified Period is open in different weekday contexts
    * @param     Weekday[]   $weekdays   The weekdays to check
-   * @param     Set         $set        The Set containing holidays and irregular openings
+   * @param     Set         $set        The Set containing holidays and irregular openings and irregular closings
    * @param     DateTime    $now        Custom current time
    * @return    bool                    Whether the Period is open in the context of any Weekday
    */

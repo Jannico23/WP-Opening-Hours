@@ -1,0 +1,13 @@
+.op-irregular-closings {
+
+  tr.op-irregular-closing.highlighted {
+
+    td, th {
+      color: $color-green;
+    }
+  }
+
+  dd.highlighted, dt.highlighted {
+    color: $color-green;
+  }
+}

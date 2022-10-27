@@ -4,6 +4,7 @@ namespace OpeningHours\Module;
 
 use OpeningHours\Entity\Holiday;
 use OpeningHours\Entity\IrregularOpening;
+use OpeningHours\Entity\IrregularClosing; // JNL
 use OpeningHours\Entity\Period;
 use OpeningHours\Module\CustomPostType\Set as SetCPT;
 use OpeningHours\Util\Dates;
@@ -13,7 +14,7 @@ use OpeningHours\Util\Weekdays;
 /**
  * Module importing data from an older version of the Plugin
  *
- * @author  Jannik Portz
+ * @author  Jannik Portz, JNL
  * @package OpeningHours\Module
  */
 class Importer extends AbstractModule {
@@ -21,6 +22,7 @@ class Importer extends AbstractModule {
   const OPTION_KEY_PERIODS = 'wp_opening_hours';
   const OPTION_KEY_HOLIDAYS = 'wp_opening_hours_holidays';
   const OPTION_KEY_IRREGULAR_OPENINGS = 'wp_opening_hours_special_openings';
+  const OPTION_KEY_IRREGULAR_CLOSINGS = 'wp_opening_hours_special_closings'; // JNL
   const OPTION_KEY_SETTINGS = 'wp_opening_hours_settings';
 
   const OPTION_KEY_SIDEBARS = 'sidebars_widgets';
@@ -58,6 +60,14 @@ class Importer extends AbstractModule {
     'special_openings' => array(
       'oldId' => 'widget_widget_op_special_openings',
       'newId' => 'widget_widget_op_irregular_openings',
+      'attributeMap' => array(
+        'title' => 'title',
+        'highlighted' => 'highlight'
+      )
+      ), // JNL
+    'special_closings' => array(
+      'oldId' => 'widget_widget_op_special_closings',
+      'newId' => 'widget_widget_op_irregular_closings',
       'attributeMap' => array(
         'title' => 'title',
         'highlighted' => 'highlight'
@@ -100,6 +110,7 @@ class Importer extends AbstractModule {
     $periods = $this->getOldPeriods();
     $holidays = $this->getOldHolidays();
     $irregularOpenings = $this->getOldIrregularOpenings();
+    $irregularClosings = $this->getOldIrregularClosings(); // JNL
 
     if (count($periods) + count($holidays) + count($irregularOpenings) < 1) {
       return null;
@@ -116,10 +127,12 @@ class Importer extends AbstractModule {
     $persistence->savePeriods($periods);
     $persistence->saveHolidays($holidays);
     $persistence->saveIrregularOpenings($irregularOpenings);
+    $persistence->saveIrregularClosings($irregularClosings); // JNL
 
     delete_option(self::OPTION_KEY_PERIODS);
     delete_option(self::OPTION_KEY_HOLIDAYS);
     delete_option(self::OPTION_KEY_IRREGULAR_OPENINGS);
+    delete_option(self::OPTION_KEY_IRREGULAR_CLOSINGS); // JNL
     delete_option(self::OPTION_KEY_SETTINGS);
 
     return $this->post;
@@ -221,6 +234,37 @@ class Importer extends AbstractModule {
     return $irregularOpenings;
   }
 
+  /** JNL
+   * Loads Irregular Closings from old versions of the Plugin
+   * @return    IrregularClosing[]    Old Irregular Closings
+   */
+  protected function getOldIrregularClosings() {
+    $meta = json_decode(get_option(self::OPTION_KEY_IRREGULAR_OPENINGS), true);
+    if (!is_array($meta) || count($meta) < 1) {
+      return array();
+    }
+
+    $irregularClosings = array();
+    foreach ($meta as $ioData) {
+      if (!is_array($ioData) || count(array_diff(array('name', 'start', 'end', 'date'), array_keys($ioData))) > 0) {
+        continue;
+      }
+
+      try {
+        $irregularClosings[] = new IrregularClosing(
+          $ioData['name'],
+          $this->parseDateString($ioData['date'])->format(Dates::STD_DATE_FORMAT),
+          $ioData['start'],
+          $ioData['end']
+        );
+      } catch (\InvalidArgumentException $e) {
+        // Ignore invalid irregular closings
+      }
+    }
+
+    return $irregularClosings;
+  }
+
   /**
    * Upgrades old widget data to new widget data
    */
@@ -274,6 +318,17 @@ class Importer extends AbstractModule {
         $widgets[$offset] = $id;
       }
     }
+    
+    // JNL
+    foreach ($widgets as $offset => $id) {
+      if (preg_match(self::REGEX_OLD_WIDGET_KEY, $id) === false) {
+        continue;
+      }
+
+      $id = str_replace(array('status', 'special_closings'), array('is_open', 'irregular_closings'), $id);
+      $widgets[$offset] = $id;
+    }
+  }
 
     update_option(self::OPTION_KEY_SIDEBARS, $sidebars);
   }

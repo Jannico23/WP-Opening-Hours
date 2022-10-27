@@ -4,9 +4,11 @@ namespace OpeningHours\Module;
 
 use OpeningHours\Entity\Holiday;
 use OpeningHours\Entity\IrregularOpening;
+use OpeningHours\Entity\IrregularClosing; // JNL
 use OpeningHours\Entity\Period;
 use OpeningHours\Module\CustomPostType\MetaBox\Holidays;
 use OpeningHours\Module\CustomPostType\MetaBox\IrregularOpenings;
+use OpeningHours\Module\CustomPostType\MetaBox\IrregularClosings; // JNL
 use OpeningHours\Module\CustomPostType\MetaBox\OpeningHours as OpeningHoursMetaBox;
 use OpeningHours\Util\Dates;
 use OpeningHours\Util\ViewRenderer;
@@ -14,7 +16,7 @@ use OpeningHours\Util\ViewRenderer;
 /**
  * Ajax module
  *
- * @author      Jannik Portz
+ * @author      Jannik Portz, JNL
  * @package     OpeningHours\Module
  */
 class Ajax extends AbstractModule {
@@ -40,6 +42,7 @@ class Ajax extends AbstractModule {
     self::registerAjaxAction('op_render_single_period', 'renderSinglePeriod');
     self::registerAjaxAction('op_render_single_dummy_holiday', 'renderSingleDummyHoliday');
     self::registerAjaxAction('op_render_single_dummy_irregular_opening', 'renderSingleDummyIrregularOpening');
+    self::registerAjaxAction('op_render_single_dummy_irregular_closing', 'renderSingleDummyIrregularClosing'); // JNL
   }
 
   /** Action: Render Single Period */
@@ -75,6 +78,17 @@ class Ajax extends AbstractModule {
   public static function renderSingleDummyIrregularOpening() {
     $view = new ViewRenderer(op_view_path(IrregularOpenings::TEMPLATE_PATH_SINGLE), array(
       'io' => IrregularOpening::createDummy()
+    ));
+
+    $view->render();
+    die();
+  }
+
+  // JNL
+  /** Action: Render Single Dummy Irregular Closing */
+  public static function renderSingleDummyIrregularClosing() {
+    $view = new ViewRenderer(op_view_path(IrregularClosings::TEMPLATE_PATH_SINGLE), array(
+      'ic' => IrregularClosing::createDummy()
     ));
 
     $view->render();

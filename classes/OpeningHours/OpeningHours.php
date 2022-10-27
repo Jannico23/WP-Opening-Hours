@@ -11,7 +11,7 @@ use OpeningHours\Util\Weekdays;
 /**
  * Core Module for the Opening Hours Plugin
  *
- * @author      Jannik Portz
+ * @author      Jannik Portz, JNL
  * @package     OpeningHours
  */
 class OpeningHours extends AbstractModule {
@@ -51,14 +51,16 @@ class OpeningHours extends AbstractModule {
       'Shortcode\Overview' => Module\Shortcode\Overview::getInstance(),
       'Shortcode\Holidays' => Module\Shortcode\Holidays::getInstance(),
       'Shortcode\IrregularOpenings' => Module\Shortcode\IrregularOpenings::getInstance(),
-      'Shortcode\Schema' => Module\Shortcode\Schema::getInstance()
-    );
+      'Shortcode\IrregularClosings' => Module\Shortcode\IrregularClosings::getInstance(), // JNL
+      'Shortcode\Schema' => Module\Shortcode\Schema::getInstance(),
+      );
 
     $this->widgets = array(
       'OpeningHours\Module\Widget\Overview',
       'OpeningHours\Module\Widget\IsOpen',
       'OpeningHours\Module\Widget\Holidays',
       'OpeningHours\Module\Widget\IrregularOpenings',
+      'OpeningHours\Module\Widget\IrregularClosings', // JNL
       'OpeningHours\Module\Widget\Schema'
     );
   }
